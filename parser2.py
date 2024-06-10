@@ -21,12 +21,11 @@ def clean_text(input_text):
 
     # Эмоджи и эмотиконы: используем собственную функцию для преобразования эмоджи в текст
     # Важно понимать эмоциональную окраску обрабатываемого текста
-    clean_text = emojis_words(clean_text)
+    #clean_text = emojis_words(clean_text)
     
     # Приводим все входные данные к нижнему регистру
     clean_text = clean_text.lower()
 
-    # Убираем все пробелы
     # Так как все данные теперь представлены словами - удалим пробелы
     clean_text = re.sub('\s+', ' ', clean_text)
 
@@ -36,10 +35,12 @@ def clean_text(input_text):
     # Разворачиваем сокращения: текст часто содержит конструкции вроде "don't" или "won't", поэтому развернём подобные сокращения
     clean_text = contractions.fix(clean_text)
 
-    # Убираем специальные символы: избавляемся от всего, что не является "словами"
-    clean_text = re.sub('[^a-zA-Z0-9\s]', '', clean_text)
+    #clean_text = re.sub('[^a-zA-Z0-9\s]', '', clean_text)
+    # Убираем специальные символы и цифры: избавляемся от всего, что не является "словами"
+    clean_text = re.sub('[^a-zA-Z\s]', '', clean_text)
 
     # Записываем числа прописью: 100 превращается в "сто" (для компьютера)
+    '''
     temp = inflect.engine()
     words = []
     for word in clean_text.split():
@@ -48,6 +49,7 @@ def clean_text(input_text):
         else:
             words.append(word)
     clean_text = ' '.join(words)
+    '''
 
     # Стоп-слова: удаление стоп-слов - это стандартная практика очистки текстов
     stop_words = set(stopwords.words('english'))
@@ -72,11 +74,15 @@ def emojis_words(text):
     
     return clean_text
 
-import requests
-import re
+import pandas as pd
 
-url = 'https://shopfather.io/'
-response = requests.get(url)
-text_data = response.text
+data = pd.read_csv('Mesto.csv')
+data.columns = ['ID', 'DATE', 'AGE', 'COUNTRY', 'PROJ', 'FROM', 'FROM1', 'ABOUT', 'PROF', 'PROF1', 'VALUE', 'VALUE1', 'L_FOR', 'L_FOR1', 'TYPE', 'ROLE']
+data = data.dropna(subset=['ABOUT','TYPE'])
+
+#reset index of DataFrame
+data = data.reset_index(drop=True)
+print(data.shape[0])
+text_data = data['TYPE'].to_string()
 clean_text = clean_text(text_data)
-print(clean_text)
+print(len(clean_text))
