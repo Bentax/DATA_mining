@@ -7,6 +7,7 @@ We can do this to tweak the dataset, generating a result that's aggregated by ye
 There are lots of potential resampling options: we'll use Y, which is short for "year".
 '''
 shelter_outcomes['date_of_birth'].value_counts().resample('Y').sum().plot.line()
+shelter_outcomes['datetime'].value_counts().resample('Y').count().plot.line()
 '''
 Much clearer! It looks like, actually, 2014 and 2015 have an almost equal presence in the dataset.
 This demonstrates the data visualization benefit of resampling: by choosing certain periods you can more clearly visualize certain aspects of the dataset.
