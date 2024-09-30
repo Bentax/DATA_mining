@@ -1,6 +1,7 @@
 # Импорт необходимых библиотек
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 # Чтение .csv файла
 file_path = 'path_to_your_file.csv'  # Замените на путь к вашему файлу
@@ -14,37 +15,34 @@ display(df.head())
 print("\nИнформация о датасете:")
 df.info()
 
-# Описание числовых признаков
-print("\nСтатистическое описание числовых признаков:")
-display(df.describe())
-
-# Поиск пропущенных значений
+# Проверка наличия пропущенных значений
 print("\nКоличество пропущенных значений в каждом столбце:")
 display(df.isnull().sum())
 
-# Удаление дублирующихся строк
-df = df.drop_duplicates()
-print("\nКоличество строк после удаления дубликатов:", len(df))
+# Удаление столбцов с высоким количеством пропусков
+# Здесь я удаляю столбцы, где менее 30% значений не заполнены.
+threshold = 0.3
+df = df[df.columns[df.notnull().mean() > threshold]]
+print("\nСтолбцы, оставленные после удаления с высоким уровнем пропусков:")
+display(df.columns)
 
-# Заполнение пропущенных значений
-# Заполнение числовых признаков средним значением
-df = df.fillna(df.mean())
+# Заполнение пропусков в числовых столбцах средним значением
+numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
+df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
 
-# Заполнение категориальных признаков наиболее частым значением
-df = df.apply(lambda x: x.fillna(x.mode()[0]) if x.dtype == 'object' else x)
+# Заполнение пропусков в категориальных столбцах наиболее частым значением
+categorical_cols = df.select_dtypes(include=['object']).columns
+df[categorical_cols] = df[categorical_cols].apply(lambda x: x.fillna(x.mode()[0]) if not x.mode().empty else x)
 
-print("\nКоличество пропущенных значений после заполнения:")
-display(df.isnull().sum())
+# Преобразование категориальных переменных в числовые (one-hot encoding)
+df = pd.get_dummies(df, drop_first=True)
 
-# Преобразование категориальных переменных в числовые (если необходимо)
-df = pd.get_dummies(df)
+# Нормализация числовых признаков (если числовые признаки есть)
+if not df.empty and len(numeric_cols) > 0:
+    scaler = MinMaxScaler()
+    df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
 
-# Нормализация числовых признаков (мин-макс)
-from sklearn.preprocessing import MinMaxScaler
-scaler = MinMaxScaler()
-df[df.columns] = scaler.fit_transform(df[df.columns])
-
-print("\nПервые 5 строк данных после нормализации:")
+print("\nПервые 5 строк данных после обработки:")
 display(df.head())
 
 # Сохранение очищенного и обработанного датасета в новый файл
