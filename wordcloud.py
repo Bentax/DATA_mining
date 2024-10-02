@@ -3,7 +3,6 @@ import pandas as pd
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-# Чтение .csv файла (замените на путь к вашему файлу)
 file_path = 'Стартапы.csv'
 df = pd.read_csv(file_path)
 
